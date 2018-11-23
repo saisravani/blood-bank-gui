@@ -1,0 +1,79 @@
+
+
+create table donor
+(
+  did integer primary key not null,
+  dname varchar(20) not null,
+  bloodgrp varchar(10) not null,
+  dphno varchar(20) not null,
+  dage integer not null,
+  count integer default 1
+);
+create table login
+(
+ldid integer not null,
+password varchar(20) not null
+);
+ alter table login 
+add  foreign key (ldid) references donor(did);
+
+ create table blood
+(
+  bldgrp varchar(5) not null,
+  quant integer not null);
+
+
+create table receiver
+(
+  rid integer primary key not null auto_increment,
+  rname varchar(20) not null,
+  bloodgrp varchar(20) not null,
+  rphno varchar(20) not null,
+  rage integer not null,
+  rquant integer not null
+);
+create trigger checkage before insert
+on donor
+for each row
+begin
+if new.dage<18 and new.dage>60
+then signal sqlstate '45000' set message_text='not allowed to donate';
+end if ;
+end
+
+create trigger a before insert 
+on donor 
+for each row
+begin
+update blood set quant=quant+300
+where bldgrp=new.bloodgrp;
+end
+
+create function bill(count integer)
+returns integer deterministic
+begin 
+declare amount integer;
+set amount=count*100;
+return amount;
+end//
+
+
+create trigger b before update 
+on donor
+for each row
+begin
+update blood set quant=300+quant
+where bldgrp=new.bloodgrp;
+end
+ insert into blood values('a+',300),('b+',300),('o+',300),('a-',300),('b-',300),('o-',300),('ab+',300),('ab-',300);
+
+create trigger rec before insert 
+on receiver 
+for each row
+begin
+update blood set quant=quant-new.rquant
+where bldgrp=new.bloodgrp;
+end
+
+
+select password from login where ldid=10
